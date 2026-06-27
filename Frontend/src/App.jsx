@@ -4,6 +4,9 @@ import HomePage from "./pages/HomePage";
 import Footer from "./layouts/Footer";
 import Features from "./components/home/Features";
 import Categories from "./components/home/Categories";
+import RegisterPage from "./pages/Register";
+import LoginPage from "./pages/Login";
+import { AuthProvider } from "./context/AuthContext";
 
 
 
@@ -16,6 +19,7 @@ const PlaceholderPage = ({ title }) => (
 
 function App() {
   return (
+    <AuthProvider>
     <Router>
       <Navbar/>
       <main>
@@ -23,6 +27,8 @@ function App() {
           <Route path="/" element={<HomePage/>} />
           <Route path="/features" element={<Features/>}/>
           <Route path="/categories" element={<Categories/>}/>
+          <Route path="/register" element={<RegisterPage/>}/>
+          <Route path="/login" element={<LoginPage/>}/>
           {/* <Route path="/register" element={<RegisterPage/>}/> */}
           {/* <Route path="/report" element={<PlaceholderPage title="Report an Issue" />} />
           <Route path="/issues" element={<PlaceholderPage title="Browse Issues" />} />
@@ -35,6 +41,7 @@ function App() {
       </main>
       <Footer/>
     </Router>
+    </AuthProvider>
   );
 }
 

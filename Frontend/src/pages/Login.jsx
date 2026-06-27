@@ -1,24 +1,16 @@
 import { useState } from "react";
-import backendApi from "../api/backendApi"
 import { Link, useNavigate } from "react-router-dom";
+import backendApi from "../api/backendApi";
+import { useAuth } from "../context/AuthContext";
 
-
-const CITIES = ["Bhopal", "Indore", "Pune", "Mumbai", "Bangalore", "Hyderabad", "Surat", "Chandigarh"];
-
-function RegisterPage() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    phone: "",
-    city: "",
-    ward: "",
-    role: "citizen",
-  });
+function LoginPage() {
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPass, setShowPass] = useState(false);
+  
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -30,10 +22,11 @@ function RegisterPage() {
     setLoading(true);
 
     try {
-      await backendApi.post("/auth/register", formData);
-      navigate("/login");
+      const { data } = await backendApi.post("/auth/login", formData);
+      setUser(data.user);
+      navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
+      setError(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -61,10 +54,10 @@ function RegisterPage() {
 
         <div className="relative z-10">
           <h2 className="text-3xl font-extrabold text-white leading-snug mb-4" style={{ fontFamily: "Sora, sans-serif" }}>
-            Be the change your city needs.
+            Your city listens when you speak up.
           </h2>
           <p className="text-white/50 text-sm leading-relaxed max-w-xs">
-            Create your free account and start reporting civic issues in under 60 seconds.
+            Track your reports, upvote issues, and hold your municipality accountable.
           </p>
         </div>
 
@@ -88,12 +81,12 @@ function RegisterPage() {
           </Link>
 
           <h1 className="text-2xl font-extrabold text-[#0f1923] mb-1" style={{ fontFamily: "Sora, sans-serif" }}>
-            Create your account
+            Welcome back
           </h1>
           <p className="text-sm text-gray-500 mb-8">
-            Already have an account?{" "}
-            <Link to="/login" className="text-[#1a56db] font-semibold hover:underline">
-              Sign in
+            Don't have an account?{" "}
+            <Link to="/register" className="text-[#1a56db] font-semibold hover:underline">
+              Create one free
             </Link>
           </p>
 
@@ -105,19 +98,6 @@ function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-[#0f1923] mb-1.5">Full Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Rahul Verma"
-                required
-                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-white outline-none transition-all focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
-              />
-            </div>
-
-            <div>
               <label className="block text-sm font-semibold text-[#0f1923] mb-1.5">Email</label>
               <input
                 type="email"
@@ -126,7 +106,7 @@ function RegisterPage() {
                 onChange={handleChange}
                 placeholder="you@example.com"
                 required
-                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-white outline-none transition-all focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
+                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-white outline-none transition-all focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db] hover:border-gray-300"
               />
             </div>
 
@@ -138,9 +118,9 @@ function RegisterPage() {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="Min. 6 characters"
+                  placeholder="Enter your password"
                   required
-                  className="w-full px-4 py-3 pr-11 text-sm rounded-xl border border-gray-200 bg-white outline-none transition-all focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
+                  className="w-full px-4 py-3 pr-11 text-sm rounded-xl border border-gray-200 bg-white outline-none transition-all focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db] hover:border-gray-300"
                 />
                 <button
                   type="button"
@@ -152,58 +132,13 @@ function RegisterPage() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-[#0f1923] mb-1.5">Phone (optional)</label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="+91 98765 43210"
-                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-white outline-none transition-all focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-[#0f1923] mb-1.5">City</label>
-              <select
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-white outline-none transition-all focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
-              >
-                <option value="">Select your city</option>
-                {CITIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-[#0f1923] mb-1.5">Ward / Area</label>
-              <input
-                type="text"
-                name="ward"
-                value={formData.ward}
-                onChange={handleChange}
-                placeholder="e.g. Ward 12 or Vijay Nagar"
-                required
-                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-white outline-none transition-all focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
-              />
-            </div>
-
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-xl bg-[#1a56db] hover:bg-[#1140a8] text-white text-sm font-bold transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+              className="w-full py-3.5 rounded-xl bg-[#1a56db] hover:bg-[#1140a8] text-white text-sm font-bold transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-1"
             >
-              {loading ? "Creating account..." : "Create account"}
+              {loading ? "Signing in..." : "Sign in"}
             </button>
-
-            <p className="text-xs text-gray-400 text-center">
-              By creating an account you agree to our Terms and Privacy Policy.
-            </p>
           </form>
         </div>
       </div>
@@ -211,4 +146,4 @@ function RegisterPage() {
   );
 }
 
-export default RegisterPage;
+export default LoginPage;
