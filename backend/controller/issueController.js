@@ -1,0 +1,150 @@
+const Issue = require("../models/Issue");
+
+// POST /api/issues — Create new issue
+module.exports.createIssue = async (req, res) => {
+  const { title, description, category, photoFileId, photoFilename, latitude, longitude, address, city, ward } = req.body;
+
+  try {
+    if (!title || !description || !category || !photoFileId) {
+      return res.status(400).json({ message: "Please fill all required fields" });
+    }
+
+    const newIssue = new Issue({
+      title,
+      description,
+      category,
+      photo: {
+        fileId: photoFileId,
+        filename: photoFilename,
+      },
+      location: {
+        latitude,
+        longitude,
+        address,
+      },
+      city,
+      ward,
+      reportedBy: req.user.userId,
+    });
+
+    await newIssue.save();
+
+    res.status(201).json({
+      message: "Issue reported successfully",
+      issue: newIssue,
+    });
+  } catch (err) {
+    console.log("Create issue error:", err);
+    res.status(500).json({ message: `Server error: ${err.message}` });
+  }
+};
+
+// GET /api/issues — Get all issues (with filters)
+module.exports.getAllIssues = async (req, res) => {
+  try {
+    const { category, status, city, ward } = req.query;
+
+    let filter = {};
+    if (category) filter.category = category;
+    if (status) filter.status = status;
+    if (city) filter.city = city;
+    if (ward) filter.ward = ward;
+
+    const issues = await Issue.find(filter)
+      .populate("reportedBy", "name email")
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    res.status(200).json({ issues });
+  } catch (err) {
+    console.log("Get issues error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// GET /api/issues/:id — Get single issue
+module.exports.getIssueById = async (req, res) => {
+  try {
+    const issue = await Issue.findById(req.params.id)
+      .populate("reportedBy", "name email city ward")
+      .populate("upvotedBy", "name");
+
+    if (!issue) {
+      return res.status(404).json({ message: "Issue not found" });
+    }
+
+    res.status(200).json({ issue });
+  } catch (err) {
+    console.log("Get issue error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// POST /api/issues/:id/upvote — Upvote an issue
+module.exports.upvoteIssue = async (req, res) => {
+  try {
+    const issue = await Issue.findById(req.params.id);
+    if (!issue) {
+      return res.status(404).json({ message: "Issue not found" });
+    }
+
+    const userId = req.user.userId;
+
+    if (issue.upvotedBy.includes(userId)) {
+      issue.upvotedBy = issue.upvotedBy.filter((id) => id.toString() !== userId);
+      issue.votes -= 1;
+    } else {
+      issue.upvotedBy.push(userId);
+      issue.votes += 1;
+    }
+
+    await issue.save();
+
+    res.status(200).json({ message: "Vote updated", votes: issue.votes });
+  } catch (err) {
+    console.log("Upvote error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// POST /api/issues/:id/comment — Add comment
+module.exports.addComment = async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) {
+      return res.status(400).json({ message: "Comment cannot be empty" });
+    }
+
+    const issue = await Issue.findById(req.params.id);
+    if (!issue) {
+      return res.status(404).json({ message: "Issue not found" });
+    }
+
+    const newComment = {
+      userId: req.user.userId,
+      userName: req.user.userName || "Anonymous",
+      text,
+    };
+
+    issue.comments.push(newComment);
+    await issue.save();
+
+    res.status(201).json({ message: "Comment added", comments: issue.comments });
+  } catch (err) {
+    console.log("Comment error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// GET /api/issues/user/my-issues — Get user's issues (protected)
+module.exports.getMyIssues = async (req, res) => {
+  try {
+    const issues = await Issue.find({ reportedBy: req.user.userId })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ issues });
+  } catch (err) {
+    console.log("Get my issues error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
