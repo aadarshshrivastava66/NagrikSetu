@@ -1,15 +1,18 @@
 const mongoose = require("mongoose");
-const Grid = require("gridfs-stream");
 
-let gfs;
+let bucket;
 
 const initGridFS = () => {
   const conn = mongoose.connection;
-  gfs = Grid(conn.db, mongoose.mongo);
-  gfs.collection("uploads");
-  return gfs;
+  bucket = new mongoose.mongo.GridFSBucket(conn.db);
+  console.log("GridFS initialized");
 };
 
-const getGFS = () => gfs;
+const getBucket = () => {
+  if (!bucket) {
+    throw new Error("GridFS not initialized");
+  }
+  return bucket;
+};
 
-module.exports = { initGridFS, getGFS };
+module.exports = { initGridFS, getBucket };

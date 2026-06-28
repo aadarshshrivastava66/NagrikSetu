@@ -7,6 +7,7 @@ import Categories from "./components/home/Categories";
 import RegisterPage from "./pages/Register";
 import LoginPage from "./pages/Login";
 import { AuthProvider } from "./context/AuthContext";
+import ReportIssuePage from "./pages/ReportIssuePage";
 
 
 
@@ -29,6 +30,7 @@ function App() {
           <Route path="/categories" element={<Categories/>}/>
           <Route path="/register" element={<RegisterPage/>}/>
           <Route path="/login" element={<LoginPage/>}/>
+          <Route path="/report" element={<ReportIssuePage/>}/>
           {/* <Route path="/register" element={<RegisterPage/>}/> */}
           {/* <Route path="/report" element={<PlaceholderPage title="Report an Issue" />} />
           <Route path="/issues" element={<PlaceholderPage title="Browse Issues" />} />

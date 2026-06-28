@@ -76,14 +76,7 @@ module.exports.login = async (req, res) => {
 
     res.status(200).json({
       message: "Logged in successfully",
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        city: user.city,
-        ward: user.ward,
-      },
+      user
     });
   } catch (err) {
     console.log("Login error:", err);
@@ -102,6 +95,7 @@ module.exports.logout = (req, res) => {
 
 
 module.exports.getMe = async (req, res) => {
+  
   try {
     const user = await User.findById(req.user.userId).select("name email role city ward");
     if (!user) {
