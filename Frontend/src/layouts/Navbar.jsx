@@ -34,14 +34,17 @@ const Navbar = () => {
           <Link to="/" className="text-sm font-medium text-gray-600 hover:text-[#0f1923] hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-all">
             Home
           </Link>
-          <Link to="/#features" className="text-sm font-medium text-gray-600 hover:text-[#0f1923] hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-all">
+          <Link to="/features" className="text-sm font-medium text-gray-600 hover:text-[#0f1923] hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-all">
             Features
           </Link>
-          <Link to="/#categories" className="text-sm font-medium text-gray-600 hover:text-[#0f1923] hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-all">
+          <Link to="/categories" className="text-sm font-medium text-gray-600 hover:text-[#0f1923] hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-all">
             Categories
           </Link>
           <Link to="/about" className="text-sm font-medium text-gray-600 hover:text-[#0f1923] hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-all">
             About
+          </Link>
+          <Link to="/issues" className="text-sm font-medium text-gray-600 hover:text-[#0f1923] hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-all">
+            Issues
           </Link>
         </div>
 
@@ -97,10 +100,10 @@ const Navbar = () => {
           <Link to="/" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-gray-600 hover:bg-gray-50 px-3 py-2.5 rounded-lg transition-all">
             Home
           </Link>
-          <a href="/#features" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-gray-600 hover:bg-gray-50 px-3 py-2.5 rounded-lg transition-all">
+          <a href="/features" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-gray-600 hover:bg-gray-50 px-3 py-2.5 rounded-lg transition-all">
             Features
           </a>
-          <a href="/#categories" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-gray-600 hover:bg-gray-50 px-3 py-2.5 rounded-lg transition-all">
+          <a href="/categories" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-gray-600 hover:bg-gray-50 px-3 py-2.5 rounded-lg transition-all">
             Categories
           </a>
           <Link to="/about" onClick={() => setMenuOpen(false)} className="text-sm font-medium text-gray-600 hover:bg-gray-50 px-3 py-2.5 rounded-lg transition-all">

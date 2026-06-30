@@ -8,6 +8,8 @@ import RegisterPage from "./pages/Register";
 import LoginPage from "./pages/Login";
 import { AuthProvider } from "./context/AuthContext";
 import ReportIssuePage from "./pages/ReportIssuePage";
+import ProtectedRoute from "./components/ProtectedPage";
+import BrowseIssuesPage from "./pages/BrowserPage";
 
 
 
@@ -30,7 +32,14 @@ function App() {
           <Route path="/categories" element={<Categories/>}/>
           <Route path="/register" element={<RegisterPage/>}/>
           <Route path="/login" element={<LoginPage/>}/>
-          <Route path="/report" element={<ReportIssuePage/>}/>
+          <Route path="/issues" element={<BrowseIssuesPage/>}/>
+          <Route path="/report" element={
+            <ProtectedRoute>
+            <ReportIssuePage/>
+            </ProtectedRoute>
+          }/>
+          
+          
           {/* <Route path="/register" element={<RegisterPage/>}/> */}
           {/* <Route path="/report" element={<PlaceholderPage title="Report an Issue" />} />
           <Route path="/issues" element={<PlaceholderPage title="Browse Issues" />} />
