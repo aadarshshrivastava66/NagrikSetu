@@ -33,6 +33,10 @@ const userSchema = new mongoose.Schema({
     enum: ["citizen", "gov", "admin"],
     default: "citizen",
   },
+  department:{
+    type:String,
+    enum:["Roads", "Water", "Electricity", "Sanitation", "Parks", "Safety", "Infrastructure"]
+  },
   civicPoints: {
     type: Number,
     default: 0,

@@ -46,15 +46,18 @@ const Navbar = () => {
           <Link to="/issues" className="text-sm font-medium text-gray-600 hover:text-[#0f1923] hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-all">
             Issues
           </Link>
+          {user&&user.role==='citizen' &&
+            <Link to="/dashboard" className="text-sm font-medium text-gray-600 hover:text-[#0f1923] hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-all">
+            Dashboard
+          </Link>
+          }
         </div>
 
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-2.5">
           {user ? (
             <>
-              <span className="text-sm font-medium text-gray-600">
-                Welcome, <span className="font-semibold text-[#0f1923]">{user.name}</span>
-              </span>
+              
               <button
                 onClick={handleLogout}
                 className="text-sm font-semibold text-gray-600 border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition-all"
