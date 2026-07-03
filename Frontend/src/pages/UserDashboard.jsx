@@ -115,12 +115,11 @@ function UserDashboardPage() {
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-3 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
           {[
             { label: "Total Reported", value: totalIssues, icon: "📋", color: "text-[#1a56db]" },
             { label: "Active Issues", value: activeIssues, icon: "🔄", color: "text-amber-600" },
             { label: "Resolved", value: resolvedIssues, icon: "✅", color: "text-green-600" },
-        
           ].map((stat) => (
             <div key={stat.label} className="bg-white rounded-2xl border border-gray-200 p-4 text-center">
               <div className="text-2xl mb-1">{stat.icon}</div>
@@ -251,6 +250,8 @@ function UserDashboardPage() {
                         <span>{CATEGORY_ICONS[issue.category]} {issue.category}</span>
                         <span>•</span>
                         <span>📍 {issue.ward}, {issue.city}</span>
+                        <span>•</span>
+                        <span>👍 {issue.votes}</span>
                         <span>•</span>
                         <span>
                           {new Date(issue.createdAt).toLocaleDateString("en-IN", {

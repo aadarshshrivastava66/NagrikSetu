@@ -4,7 +4,7 @@ import backendApi from "../api/backendApi";
 import { useAuth } from "../context/AuthContext";
 
 const CATEGORIES = ["All", "Roads", "Water", "Electricity", "Sanitation", "Parks", "Safety", "Infrastructure", "Other"];
-const STATUSES = ["All", "Submitted", "Assigned", "In Progress", "Resolved", "Closed"];
+const STATUSES = ["All", "Submitted", "Acknowledged", "Assigned", "In Progress", "Resolved", "Closed"];
 
 const STATUS_COLORS = {
   Submitted: "bg-amber-50 text-amber-700",
@@ -62,6 +62,29 @@ function BrowseIssuesPage() {
     fetchIssues();
   }, [categoryFilter, statusFilter]);
 
+  // Handle upvote
+  const handleUpvote = async (issueId, e) => {
+    e.preventDefault(); // prevent navigating to detail page
+    e.stopPropagation();
+
+    if (!user) {
+      alert("Please login to upvote issues");
+      return;
+    }
+
+    try {
+      const { data } = await backendApi.post(`/issues/${issueId}/upvote`);
+      // Update vote count locally
+      setIssues((prev) =>
+        prev.map((issue) =>
+          issue._id === issueId ? { ...issue, votes: data.votes } : issue
+        )
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // Filter by search query (client-side)
   const filteredIssues = issues.filter((issue) =>
     issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -81,8 +104,11 @@ function BrowseIssuesPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-extrabold text-[#0f1923] mb-2" style={{ fontFamily: "Sora, sans-serif" }}>
-            View Issues
+            Browse Issues
           </h1>
+          <p className="text-gray-500">
+            See what's happening in your city. Upvote issues that matter to you.
+          </p>
         </div>
 
         {/* Filters Bar */}
@@ -122,7 +148,15 @@ function BrowseIssuesPage() {
               ))}
             </select>
 
-            
+            {/* Sort */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-4 py-2.5 text-sm rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
+            >
+              <option value="newest">Newest first</option>
+              <option value="votes">Most upvoted</option>
+            </select>
           </div>
 
           {/* Active filters count */}
@@ -220,6 +254,13 @@ function BrowseIssuesPage() {
                     <span className="text-xs text-gray-400">
                       {new Date(issue.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
                     </span>
+
+                    <button
+                      onClick={(e) => handleUpvote(issue._id, e)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-blue-50 hover:text-[#1a56db] transition-all text-xs font-semibold text-gray-600"
+                    >
+                      Vote 👍 {issue.votes}
+                    </button>
                   </div>
                 </div>
               </Link>

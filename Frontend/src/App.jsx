@@ -9,7 +9,7 @@ import LoginPage from "./pages/Login";
 import { AuthProvider } from "./context/AuthContext";
 import ReportIssuePage from "./pages/ReportIssuePage";
 import ProtectedRoute from "./components/ProtectedPage";
-import BrowseIssuesPage from "./pages/BrowserPage";
+import BrowseIssuesPage from "./pages/BrowserissuePage";
 import UserDashboardPage from "./pages/UserDashboard";
 
 
