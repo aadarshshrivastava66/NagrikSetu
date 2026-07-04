@@ -249,7 +249,7 @@ function BrowseIssuesPage() {
                   <div className="flex items-center justify-between text-xs text-gray-400 mb-3">
                     <span>📍 {issue.ward}, {issue.city}</span>
                   </div>
-
+                  
                   <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                     <span className="text-xs text-gray-400">
                       {new Date(issue.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
@@ -261,6 +261,14 @@ function BrowseIssuesPage() {
                     >
                       Vote 👍 {issue.votes}
                     </button>
+                    <div className="flex items-center gap-2 mt-3 ml-20">
+                    <Link
+                      to={`/issues/${issue._id}`}
+                      className="text-xs font-semibold text-[#1a56db] hover:underline"
+                    >
+                      View details →
+                    </Link>
+                  </div>
                   </div>
                 </div>
               </Link>

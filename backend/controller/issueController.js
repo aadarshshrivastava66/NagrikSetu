@@ -111,7 +111,8 @@ module.exports.upvoteIssue = async (req, res) => {
 module.exports.addComment = async (req, res) => {
   try {
     const { text } = req.body;
-    if (!text) {
+
+    if (!text || !text.trim()) {
       return res.status(400).json({ message: "Comment cannot be empty" });
     }
 
@@ -120,16 +121,23 @@ module.exports.addComment = async (req, res) => {
       return res.status(404).json({ message: "Issue not found" });
     }
 
+    // Get user name from DB
+    const User = require("../models/User");
+    const user = await User.findById(req.user.userId).select("name");
+
     const newComment = {
       userId: req.user.userId,
-      userName: req.user.userName || "Anonymous",
-      text,
+      userName: user ? user.name : "Anonymous",
+      text: text.trim(),
     };
 
     issue.comments.push(newComment);
     await issue.save();
 
-    res.status(201).json({ message: "Comment added", comments: issue.comments });
+    res.status(201).json({
+      message: "Comment added",
+      comment: newComment,
+    });
   } catch (err) {
     console.log("Comment error:", err);
     res.status(500).json({ message: "Server error" });

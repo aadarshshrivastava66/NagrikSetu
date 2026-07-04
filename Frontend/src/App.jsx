@@ -11,6 +11,7 @@ import ReportIssuePage from "./pages/ReportIssuePage";
 import ProtectedRoute from "./components/ProtectedPage";
 import BrowseIssuesPage from "./pages/BrowserissuePage";
 import UserDashboardPage from "./pages/UserDashboard";
+import IssueDetailPage from "./pages/IssueDeatilPage";
 
 
 
@@ -43,7 +44,7 @@ function App() {
             <ProtectedRoute>
            < UserDashboardPage/>
             </ProtectedRoute>}/>
-          
+          <Route path="/issues/:id" element={<IssueDetailPage/>}/>
           {/* <Route path="/register" element={<RegisterPage/>}/> */}
           {/* <Route path="/report" element={<PlaceholderPage title="Report an Issue" />} />
           <Route path="/issues" element={<PlaceholderPage title="Browse Issues" />} />
