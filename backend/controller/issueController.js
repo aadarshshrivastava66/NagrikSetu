@@ -156,3 +156,52 @@ module.exports.getMyIssues = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// PATCH /api/issues/:id/status — Update issue status (Government only)
+module.exports.updateIssueStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    const validStatuses = ["Submitted", "Acknowledged", "Assigned", "In Progress", "Resolved", "Closed"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
+
+    const issue = await Issue.findById(req.params.id);
+    if (!issue) {
+      return res.status(404).json({ message: "Issue not found" });
+    }
+
+    issue.status = status;
+    await issue.save();
+
+    res.status(200).json({ message: "Status updated successfully", issue });
+  } catch (err) {
+    console.log("Update status error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// GET /api/issues/gov/stats — Get dashboard stats (Government only)
+module.exports.getGovStats = async (req, res) => {
+  try {
+    const totalIssues = await Issue.countDocuments();
+    const submitted = await Issue.countDocuments({ status: "Submitted" });
+    const inProgress = await Issue.countDocuments({ status: "In Progress" });
+    const resolved = await Issue.countDocuments({ status: "Resolved" });
+    const closed = await Issue.countDocuments({ status: "Closed" });
+
+    res.status(200).json({
+      stats: {
+        totalIssues,
+        submitted,
+        inProgress,
+        resolved,
+        closed,
+      },
+    });
+  } catch (err) {
+    console.log("Get stats error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

@@ -19,3 +19,12 @@ module.exports.isLogedIn=async(req,res,next)=>{
     return res.status(401).json({ message: "Invalid or expired token" });
   }
 }
+
+module.exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ message: "You do not have permission to do this" });
+    }
+    next();
+  };
+};

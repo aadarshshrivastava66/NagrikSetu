@@ -13,7 +13,7 @@ function RegisterPage() {
     phone: "",
     city: "",
     ward: "",
-    role: "citizen",
+    role: "admin",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

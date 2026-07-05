@@ -51,6 +51,11 @@ const Navbar = () => {
             Dashboard
           </Link>
           }
+          {user&& (user.role==='admin' ||user.role==='gov') &&
+            <Link to="/gov/dashboard" className="text-sm font-medium text-gray-600 hover:text-[#0f1923] hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-all">
+           Admin Dashboard
+          </Link>
+          }
         </div>
 
         {/* Desktop CTA */}
