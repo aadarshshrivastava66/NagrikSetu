@@ -14,6 +14,7 @@ import UserDashboardPage from "./pages/UserDashboard";
 import IssueDetailPage from "./pages/IssueDeatilPage";
 import GovDashboardPage from "./pages/GovDashBoardPage";
 import LiveMapPage from "./pages/LiveMapPage";
+import AboutPage from "./pages/AboutPage";
 
 
 
@@ -49,6 +50,7 @@ function App() {
           <Route path="/issues/:id" element={<IssueDetailPage/>}/>
           <Route path="/gov/dashboard" element={<GovDashboardPage />} />
           <Route path="/map" element={<LiveMapPage/>} />
+          <Route path="/about" element={<AboutPage/>}/>
           {/* <Route path="/register" element={<RegisterPage/>}/> */}
           {/* <Route path="/report" element={<PlaceholderPage title="Report an Issue" />} />
           <Route path="/issues" element={<PlaceholderPage title="Browse Issues" />} />

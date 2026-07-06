@@ -18,7 +18,7 @@ function EmployeeRoute({ children }) {
                 replace: true,
             });
         }
-        if(user.role!=='gov'){
+        if(user.role==='citizen'){
             toast.error("You Don't Have Access for this Route")
             navigate('/');
         }
