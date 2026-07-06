@@ -16,3 +16,17 @@ body {
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
+
+/* Fix Leaflet z-index conflicts with navbar */
+.leaflet-container {
+  z-index: 1;
+}
+
+.leaflet-pane {
+  z-index: 1;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 2;
+}
