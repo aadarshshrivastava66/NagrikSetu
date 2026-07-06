@@ -12,15 +12,11 @@ function EmployeeRoute({ children }) {
         if (loading) return;
 
         if (!user) {
-            toast.error("Please login first!");
-            navigate("/register", {
-                state: { from: location.pathname },
-                replace: true,
-            });
+            return;
         }
         if(user.role==='citizen'){
-            toast.error("You Don't Have Access for this Route")
-            navigate('/');
+          alert("please Login To access the page")
+           return;
         }
     }, [user, loading, navigate, location]);
 

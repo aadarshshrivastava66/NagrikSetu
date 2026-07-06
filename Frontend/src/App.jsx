@@ -15,6 +15,8 @@ import IssueDetailPage from "./pages/IssueDeatilPage";
 import GovDashboardPage from "./pages/GovDashBoardPage";
 import LiveMapPage from "./pages/LiveMapPage";
 import AboutPage from "./pages/AboutPage";
+import EmployeeRoute from "./components/EmployeeRoute";
+import NotFound from "./pages/NotFoundPage";
 
 
 
@@ -48,9 +50,13 @@ function App() {
            < UserDashboardPage/>
             </ProtectedRoute>}/>
           <Route path="/issues/:id" element={<IssueDetailPage/>}/>
-          <Route path="/gov/dashboard" element={<GovDashboardPage />} />
+          <Route path="/gov/dashboard" element={
+            
+            <GovDashboardPage />
+          } />
           <Route path="/map" element={<LiveMapPage/>} />
           <Route path="/about" element={<AboutPage/>}/>
+          <Route path="*" element={<NotFound/>}/>
           {/* <Route path="/register" element={<RegisterPage/>}/> */}
           {/* <Route path="/report" element={<PlaceholderPage title="Report an Issue" />} />
           <Route path="/issues" element={<PlaceholderPage title="Browse Issues" />} />

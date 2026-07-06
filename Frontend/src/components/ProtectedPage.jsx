@@ -13,10 +13,7 @@ function ProtectedRoute({ children }) {
 
         if (!user) {
             toast.error("Please login first!");
-            navigate("/register", {
-                state: { from: location.pathname },
-                replace: true,
-            });
+           return;
         }
     }, [user, loading, navigate, location]);
 
