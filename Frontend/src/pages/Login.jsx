@@ -24,7 +24,12 @@ function LoginPage() {
     try {
       const { data } = await backendApi.post("/auth/login", formData);
       setUser(data.user);
-      navigate("/dashboard");
+      if(data.user.role==='citizen'){
+        navigate("/dashboard");
+      }else{
+        navigate("/gov/dashboard")
+      }
+      
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     } finally {

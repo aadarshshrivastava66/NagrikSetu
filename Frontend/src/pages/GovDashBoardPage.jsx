@@ -32,29 +32,27 @@ function GovDashboardPage() {
 
   const [issues, setIssues] = useState([]);
   const [stats, setStats] = useState(null);
+  const [scope, setScope] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState(null);
 
   const [statusFilter, setStatusFilter] = useState("All");
-  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [categoryFilter, setCategoryFilter] = useState("All"); // admin only
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Redirect if not gov/admin
+  const isAdmin = user?.role === "admin";
+  const isGov = user?.role === "gov";
+
   useEffect(() => {
     if (!authLoading) {
-      if (!user) {
-        navigate("/login");
-      } else if (user.role !== "gov" && user.role !== "admin") {
-        navigate("/");
-      }
+      if (!user) navigate("/login");
+      else if (!isGov && !isAdmin) navigate("/");
     }
   }, [user, authLoading]);
 
   useEffect(() => {
-    if (user && (user.role === "gov" || user.role === "admin")) {
-      fetchData();
-    }
+    if (user && (isGov || isAdmin)) fetchData();
   }, [user, statusFilter, categoryFilter]);
 
   const fetchData = async () => {
@@ -63,14 +61,15 @@ function GovDashboardPage() {
     try {
       const params = {};
       if (statusFilter !== "All") params.status = statusFilter;
-      if (categoryFilter !== "All") params.category = categoryFilter;
+      if (isAdmin && categoryFilter !== "All") params.category = categoryFilter;
 
       const [issuesRes, statsRes] = await Promise.all([
-        backendApi.get("/issues", { params }),
+        backendApi.get("/issues/gov/all", { params }),
         backendApi.get("/issues/gov/stats"),
       ]);
 
       setIssues(issuesRes.data.issues);
+      setScope(issuesRes.data.scope);
       setStats(statsRes.data.stats);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load dashboard data");
@@ -79,15 +78,12 @@ function GovDashboardPage() {
     }
   };
 
-  // Update issue status
   const handleStatusChange = async (issueId, newStatus) => {
     setUpdatingId(issueId);
     try {
       await backendApi.patch(`/issues/${issueId}/status`, { status: newStatus });
       setIssues((prev) =>
-        prev.map((issue) =>
-          issue._id === issueId ? { ...issue, status: newStatus } : issue
-        )
+        prev.map((issue) => (issue._id === issueId ? { ...issue, status: newStatus } : issue))
       );
     } catch (err) {
       alert(err.response?.data?.message || "Failed to update status");
@@ -101,7 +97,6 @@ function GovDashboardPage() {
     navigate("/");
   };
 
-  // Client-side search filter
   const filteredIssues = issues.filter((issue) =>
     issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     issue.ward.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -116,7 +111,20 @@ function GovDashboardPage() {
     );
   }
 
-  if (!user || (user.role !== "gov" && user.role !== "admin")) return null;
+  if (!user || (!isGov && !isAdmin)) return null;
+
+  // Gov user has no department/city assigned yet
+  if (isGov && error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
+        <div className="text-center max-w-md">
+          <div className="text-5xl mb-4">⚠️</div>
+          <h2 className="text-xl font-bold text-[#0f1923] mb-2">Setup Required</h2>
+          <p className="text-sm text-gray-500">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -132,26 +140,37 @@ function GovDashboardPage() {
               </svg>
             </div>
             <div>
-              <h1 className="text-sm font-bold text-white">Government Dashboard</h1>
-              <p className="text-xs text-white/40">Manage civic issues</p>
+              <h1 className="text-sm font-bold text-white">
+                {isAdmin ? "Admin Dashboard" : "Department Dashboard"}
+              </h1>
+              <p className="text-xs text-white/40">
+                {isAdmin
+                  ? "Manage all civic issues"
+                  : `${user.department} · ${user.city}`}
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <span className="text-sm text-white/60">
-              {user.name} <span className="text-xs bg-white/10 px-2 py-0.5 rounded-full ml-1 uppercase">{user.role}</span>
+              {user.name}{" "}
+              <span className="text-xs bg-white/10 px-2 py-0.5 rounded-full ml-1 uppercase">
+                {user.role}
+              </span>
             </span>
-            <button
-              onClick={handleLogout}
-              className="px-3 py-1.5 rounded-lg border border-white/20 text-white/80 text-xs font-semibold hover:bg-white/10 transition-all"
-            >
-              Logout
-            </button>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
+
+        {/* Scope banner for gov users */}
+        {isGov && (
+          <div className="bg-blue-50 border border-blue-200 text-blue-700 text-sm px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
+            <span className="text-lg">{CATEGORY_ICONS[user.department]}</span>
+            You're managing <strong>{user.department}</strong> issues in <strong>{user.city}</strong> only
+          </div>
+        )}
 
         {/* Stats Cards */}
         {stats && (
@@ -193,17 +212,20 @@ function GovDashboardPage() {
               {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
 
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-4 py-2.5 text-sm rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
-            >
-              {CATEGORIES.map((c) => <option key={c} value={c}>{c === "All" ? "All Categories" : c}</option>)}
-            </select>
+            {/* Category filter — admin only, gov is locked to their department */}
+            {isAdmin && (
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="px-4 py-2.5 text-sm rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
+              >
+                {CATEGORIES.map((c) => <option key={c} value={c}>{c === "All" ? "All Categories" : c}</option>)}
+              </select>
+            )}
           </div>
         </div>
 
-        {error && (
+        {error && !isGov && (
           <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-6">
             {error}
           </div>
@@ -212,7 +234,9 @@ function GovDashboardPage() {
         {/* Issues Table */}
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <h2 className="text-sm font-bold text-[#0f1923]">All Issues</h2>
+            <h2 className="text-sm font-bold text-[#0f1923]">
+              {isAdmin ? "All Issues" : `${user.department} Issues`}
+            </h2>
             <span className="text-xs text-gray-400">{filteredIssues.length} issues</span>
           </div>
 

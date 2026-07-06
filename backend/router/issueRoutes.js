@@ -8,6 +8,7 @@ const {
   addComment,
   getMyIssues,
   getGovStats,
+  getGovIssues,
   updateIssueStatus
 } = require("../controller/issueController");
 const { isLogedIn,restrictTo } = require("../middleware/authmiddleware");
@@ -15,6 +16,7 @@ const { isLogedIn,restrictTo } = require("../middleware/authmiddleware");
 router.post("/", isLogedIn, createIssue);           // Create issue
 router.get("/", getAllIssues);                    // Get all issues
 router.get("/user/my-issues", isLogedIn, getMyIssues); // Get my issues
+router.get("/gov/all", isLogedIn, restrictTo("gov", "admin"), getGovIssues);
 router.get("/gov/stats", isLogedIn, restrictTo("gov", "admin"), getGovStats);
 router.get("/:id", getIssueById);                 // Get single issue
 router.post("/:id/upvote", isLogedIn, upvoteIssue); // Upvote

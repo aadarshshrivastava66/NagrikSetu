@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 module.exports.register = async (req, res) => {
-  const { name, email, password, phone, city, ward, role } = req.body;
+  const { name, email, password, phone, city, ward, role,department } = req.body;
   console.log('request Come')
 
   try {
@@ -28,6 +28,7 @@ module.exports.register = async (req, res) => {
       city,
       ward,
       role,
+      department: role === "gov" ? department : undefined,
     });
 
     await newUser.save();

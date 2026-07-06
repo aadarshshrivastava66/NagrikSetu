@@ -13,7 +13,8 @@ function RegisterPage() {
     phone: "",
     city: "",
     ward: "",
-    role: "admin",
+    role: "gov",
+    department:"Roads",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
