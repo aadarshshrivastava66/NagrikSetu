@@ -6,20 +6,16 @@ import { toast } from "react-toastify";
 function AdminRoute({ children }) {
     const { user, loading } = useAuth();
     const navigate = useNavigate();
-    const location = useLocation();
+   
 
     useEffect(() => {
         if (loading) return;
 
         if (!user) {
-            toast.error("Please login first!");
-            navigate("/register", {
-                state: { from: location.pathname },
-                replace: true,
-            });
+            navigate('/login')
+            return;
         }
         if(user.role!=='admin'){
-            toast.error("You Don't Have Access for this Route")
             navigate('/');
         }
     }, [user, loading, navigate, location]);

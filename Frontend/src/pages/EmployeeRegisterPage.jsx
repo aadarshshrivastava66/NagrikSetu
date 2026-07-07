@@ -4,8 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 
 
 const CITIES = ["Bhopal", "Indore", "Pune", "Mumbai", "Bangalore", "Hyderabad", "Surat", "Chandigarh"];
+const Departments=["Roads", "Water", "Electricity", "Sanitation", "Parks", "Safety", "Infrastructure"];
 
-function RegisterPage() {
+function EmployeeRegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -13,7 +14,8 @@ function RegisterPage() {
     phone: "",
     city: "",
     ward: "",
-    role: "citizen",
+    role: "gov",
+    department:""
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -173,8 +175,24 @@ function RegisterPage() {
                 required
                 className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-white outline-none transition-all focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
               >
-                <option value="">Select your city</option>
+                <option value="">Select city</option>
                 {CITIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[#0f1923] mb-1.5">Department</label>
+              <select
+                name="department"
+                value={formData.department}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-white outline-none transition-all focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
+              >
+                <option value=""> Select Department</option>
+                {Departments.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
@@ -211,4 +229,4 @@ function RegisterPage() {
   );
 }
 
-export default RegisterPage;
+export default EmployeeRegisterPage;

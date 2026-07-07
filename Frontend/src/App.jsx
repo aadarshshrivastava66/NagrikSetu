@@ -17,6 +17,8 @@ import LiveMapPage from "./pages/LiveMapPage";
 import AboutPage from "./pages/AboutPage";
 import EmployeeRoute from "./components/EmployeeRoute";
 import NotFound from "./pages/NotFoundPage";
+import EmployeeRegisterPage from "./pages/EmployeeRegisterPage";
+import AdminRoute from "./components/AdminRoute";
 
 
 
@@ -56,6 +58,10 @@ function App() {
           } />
           <Route path="/map" element={<LiveMapPage/>} />
           <Route path="/about" element={<AboutPage/>}/>
+          <Route path="/employeeRegister" element={
+            <AdminRoute>
+            <EmployeeRegisterPage/>
+            </AdminRoute>}/>
           <Route path="*" element={<NotFound/>}/>
           {/* <Route path="/register" element={<RegisterPage/>}/> */}
           {/* <Route path="/report" element={<PlaceholderPage title="Report an Issue" />} />
