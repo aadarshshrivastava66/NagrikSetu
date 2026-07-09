@@ -1,45 +1,10 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import backendApi from "../api/backendApi";
 import { useAuth } from "../context/AuthContext";
-
-const STATUSES = ["Submitted", "Acknowledged", "Assigned", "In Progress", "Resolved", "Closed"];
-const CATEGORIES = ["All", "Roads", "Water", "Electricity", "Sanitation", "Parks", "Safety", "Infrastructure", "Other"];
-
-const STATUS_COLORS = {
-  Submitted: "bg-amber-50 text-amber-700 border-amber-200",
-  Acknowledged: "bg-blue-50 text-blue-700 border-blue-200",
-  Assigned: "bg-purple-50 text-purple-700 border-purple-200",
-  "In Progress": "bg-orange-50 text-orange-700 border-orange-200",
-  Resolved: "bg-green-50 text-green-700 border-green-200",
-  Closed: "bg-gray-100 text-gray-600 border-gray-200",
-};
-
-const CATEGORY_ICONS = {
-  Roads: "🛣️",
-  Water: "💧",
-  Electricity: "⚡",
-  Sanitation: "🗑️",
-  Parks: "🌳",
-  Safety: "🚨",
-  Infrastructure: "🏗️",
-  Other: "📋",
-};
 
 function GovDashboardPage() {
   const { user, loading: authLoading, logout } = useAuth();
   const navigate = useNavigate();
-
-  const [issues, setIssues] = useState([]);
-  const [stats, setStats] = useState(null);
-  const [scope, setScope] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [updatingId, setUpdatingId] = useState(null);
-
-  const [statusFilter, setStatusFilter] = useState("All");
-  const [categoryFilter, setCategoryFilter] = useState("All"); // admin only
-  const [searchQuery, setSearchQuery] = useState("");
 
   const isAdmin = user?.role === "admin";
   const isGov = user?.role === "gov";
@@ -51,59 +16,12 @@ function GovDashboardPage() {
     }
   }, [user, authLoading]);
 
-  useEffect(() => {
-    if (user && (isGov || isAdmin)) fetchData();
-  }, [user, statusFilter, categoryFilter]);
-
-  const fetchData = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const params = {};
-      if (statusFilter !== "All") params.status = statusFilter;
-      if (isAdmin && categoryFilter !== "All") params.category = categoryFilter;
-
-      const [issuesRes, statsRes] = await Promise.all([
-        backendApi.get("/issues/gov/all", { params }),
-        backendApi.get("/issues/gov/stats"),
-      ]);
-
-      setIssues(issuesRes.data.issues);
-      setScope(issuesRes.data.scope);
-      setStats(statsRes.data.stats);
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to load dashboard data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleStatusChange = async (issueId, newStatus) => {
-    setUpdatingId(issueId);
-    try {
-      await backendApi.patch(`/issues/${issueId}/status`, { status: newStatus });
-      setIssues((prev) =>
-        prev.map((issue) => (issue._id === issueId ? { ...issue, status: newStatus } : issue))
-      );
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to update status");
-    } finally {
-      setUpdatingId(null);
-    }
-  };
-
   const handleLogout = async () => {
     await logout();
     navigate("/");
   };
 
-  const filteredIssues = issues.filter((issue) =>
-    issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    issue.ward.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    issue.city.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  if (authLoading || loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-[#1a56db] border-t-transparent rounded-full animate-spin" />
@@ -112,19 +30,6 @@ function GovDashboardPage() {
   }
 
   if (!user || (!isGov && !isAdmin)) return null;
-
-  // Gov user has no department/city assigned yet
-  if (isGov && error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
-        <div className="text-center max-w-md">
-          <div className="text-5xl mb-4">⚠️</div>
-          <h2 className="text-xl font-bold text-[#0f1923] mb-2">Setup Required</h2>
-          <p className="text-sm text-gray-500">{error}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -144,9 +49,7 @@ function GovDashboardPage() {
                 {isAdmin ? "Admin Dashboard" : "Department Dashboard"}
               </h1>
               <p className="text-xs text-white/40">
-                {isAdmin
-                  ? "Manage all civic issues"
-                  : `${user.department} · ${user.city}`}
+                {isAdmin ? "Manage all civic issues" : `${user.department} · ${user.city}`}
               </p>
             </div>
           </div>
@@ -158,174 +61,89 @@ function GovDashboardPage() {
                 {user.role}
               </span>
             </span>
+            <button
+              onClick={handleLogout}
+              className="px-3 py-1.5 rounded-lg border border-white/20 text-white/80 text-xs font-semibold hover:bg-white/10 transition-all"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-5xl mx-auto px-6 py-16">
 
-        {/* Scope banner for gov users */}
-        {isGov && (
-          <div className="bg-blue-50 border border-blue-200 text-blue-700 text-sm px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
-            <span className="text-lg">{CATEGORY_ICONS[user.department]}</span>
-            You're managing <strong>{user.department}</strong> issues in <strong>{user.city}</strong> only
-          </div>
-        )}
-
-        {/* Stats Cards */}
-        {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            {[
-              { label: "Total Issues", value: stats.totalIssues, color: "text-[#1a56db]", bg: "bg-blue-50" },
-              { label: "Submitted", value: stats.submitted, color: "text-amber-600", bg: "bg-amber-50" },
-              { label: "In Progress", value: stats.inProgress, color: "text-orange-600", bg: "bg-orange-50" },
-              { label: "Resolved", value: stats.resolved, color: "text-green-600", bg: "bg-green-50" },
-              { label: "Closed", value: stats.closed, color: "text-gray-600", bg: "bg-gray-100" },
-            ].map((stat) => (
-              <div key={stat.label} className={`rounded-2xl border border-gray-200 p-4 ${stat.bg}`}>
-                <div className={`text-2xl font-extrabold ${stat.color}`} style={{ fontFamily: "Sora, sans-serif" }}>
-                  {stat.value}
-                </div>
-                <div className="text-xs text-gray-600 mt-0.5">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Filters */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="🔍 Search by title, city, or ward..."
-              className="flex-1 px-4 py-2.5 text-sm rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
-            />
-
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2.5 text-sm rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
-            >
-              <option value="All">All Statuses</option>
-              {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
-
-            {/* Category filter — admin only, gov is locked to their department */}
-            {isAdmin && (
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="px-4 py-2.5 text-sm rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
-              >
-                {CATEGORIES.map((c) => <option key={c} value={c}>{c === "All" ? "All Categories" : c}</option>)}
-              </select>
-            )}
-          </div>
+        {/* Welcome */}
+        <div className="text-center mb-12">
+          <h2 className="text-2xl font-extrabold text-[#0f1923] mb-2" style={{ fontFamily: "Sora, sans-serif" }}>
+            Welcome back, {user.name.split(" ")[0]}
+          </h2>
+          <p className="text-sm text-gray-500">
+            {isAdmin
+              ? "Choose an action to manage the platform"
+              : `Managing ${user.department} issues in ${user.city}`}
+          </p>
         </div>
 
-        {error && !isGov && (
-          <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-6">
-            {error}
-          </div>
-        )}
+        {/* Cards */}
+        <div className={`grid grid-cols-1 ${isAdmin ? "md:grid-cols-2" : "md:grid-cols-1 max-w-md mx-auto"} gap-6`}>
 
-        {/* Issues Table */}
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <h2 className="text-sm font-bold text-[#0f1923]">
-              {isAdmin ? "All Issues" : `${user.department} Issues`}
-            </h2>
-            <span className="text-xs text-gray-400">{filteredIssues.length} issues</span>
-          </div>
+          {/* Card 1 — View Issues (visible to both gov and admin) */}
+          <Link
+            to="/gov/issue"
+            className="group bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-lg hover:border-[#1a56db] hover:-translate-y-0.5 transition-all"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-5 group-hover:bg-[#1a56db] transition-all">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1a56db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:stroke-white transition-all">
+                <path d="M9 11l3 3L22 4"/>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-[#0f1923] mb-2">
+              View Reported Issues
+            </h3>
+            <p className="text-sm text-gray-500 leading-relaxed mb-4">
+              {isAdmin
+                ? "Browse and manage every issue reported across all departments and cities."
+                : `See all issues reported for ${user.department} in ${user.city}, and update their status.`}
+            </p>
+            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1a56db]">
+              Go to issues
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-1 transition-transform">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </span>
+          </Link>
 
-          {filteredIssues.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="text-4xl mb-3">📭</div>
-              <p className="text-sm text-gray-500">No issues match your filters</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-100 text-left">
-                    <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Issue</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Votes</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Reported</th>
-                    <th className="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {filteredIssues.map((issue) => (
-                    <tr key={issue._id} className="hover:bg-gray-50 transition-all">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                            {issue.photo?.fileId ? (
-                              <img
-                                src={`http://localhost:5000/api/files/${issue.photo.fileId}`}
-                                alt=""
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-lg">
-                                {CATEGORY_ICONS[issue.category]}
-                              </div>
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <Link
-                              to={`/issues/${issue._id}`}
-                              className="text-sm font-semibold text-[#0f1923] hover:text-[#1a56db] line-clamp-1"
-                            >
-                              {issue.title}
-                            </Link>
-                            <p className="text-xs text-gray-400">by {issue.reportedBy?.name || "Unknown"}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className="text-xs font-medium text-gray-600">
-                          {CATEGORY_ICONS[issue.category]} {issue.category}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className="text-xs text-gray-500">{issue.ward}, {issue.city}</span>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className="text-xs font-semibold text-gray-600">👍 {issue.votes}</span>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className="text-xs text-gray-400">
-                          {new Date(issue.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${STATUS_COLORS[issue.status]}`}>
-                          {issue.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <select
-                          value={issue.status}
-                          onChange={(e) => handleStatusChange(issue._id, e.target.value)}
-                          disabled={updatingId === issue._id}
-                          className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db] disabled:opacity-50"
-                        >
-                          {STATUSES.map((s) => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </select>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+          {/* Card 2 — Employee Registration (admin only) */}
+          {isAdmin && (
+            <Link
+              to="/employeeRegister"
+              className="group bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-lg hover:border-[#1a56db] hover:-translate-y-0.5 transition-all"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center mb-5 group-hover:bg-[#1a56db] transition-all">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7e22ce" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:stroke-white transition-all">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="8.5" cy="7" r="4"/>
+                  <line x1="20" y1="8" x2="20" y2="14"/>
+                  <line x1="23" y1="11" x2="17" y2="11"/>
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-[#0f1923] mb-2">
+                Register New Employee
+              </h3>
+              <p className="text-sm text-gray-500 leading-relaxed mb-4">
+                Add a new government employee account with department and city access assigned.
+              </p>
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#1a56db]">
+                Register employee
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-1 transition-transform">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </span>
+            </Link>
           )}
         </div>
       </div>

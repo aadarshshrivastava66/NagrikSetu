@@ -19,6 +19,7 @@ import EmployeeRoute from "./components/EmployeeRoute";
 import NotFound from "./pages/NotFoundPage";
 import EmployeeRegisterPage from "./pages/EmployeeRegisterPage";
 import AdminRoute from "./components/AdminRoute";
+import AdminIssuePage from "./pages/AdminIssuePage";
 
 
 
@@ -56,6 +57,7 @@ function App() {
             
             <GovDashboardPage />
           } />
+          <Route path="/gov/issue" element={<AdminIssuePage/>}/>
           <Route path="/map" element={<LiveMapPage/>} />
           <Route path="/about" element={<AboutPage/>}/>
           <Route path="/employeeRegister" element={

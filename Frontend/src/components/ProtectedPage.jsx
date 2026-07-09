@@ -1,21 +1,22 @@
-import { useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { toast } from "react-toastify";
 
 function ProtectedRoute({ children }) {
     const { user, loading } = useAuth();
     const navigate = useNavigate();
-    const location = useLocation();
+
+    const hasShownAlert = useRef(false);
 
     useEffect(() => {
         if (loading) return;
 
-        if (!user) {
-            toast.error("Please login first!");
-           return;
+        if (!user && !hasShownAlert.current) {
+            hasShownAlert.current = true;
+            alert("Please Login First");
+            navigate("/", { replace: true });
         }
-    }, [user, loading, navigate, location]);
+    }, [user, loading, navigate]);
 
     if (loading) {
         return (
