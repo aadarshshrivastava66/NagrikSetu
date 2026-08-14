@@ -25,7 +25,7 @@ const Navbar = () => {
             </svg>
           </div>
           <span className="font-bold text-lg text-[#0f1923]" style={{ fontFamily: "Sora, sans-serif" }}>
-            Nagar<span className="text-[#1a56db]">Seva</span>
+            Nagrik<span className="text-[#1a56db]">Setu</span>
           </span>
         </Link>
 

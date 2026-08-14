@@ -55,7 +55,7 @@ function RegisterPage() {
             </svg>
           </div>
           <span className="font-bold text-lg text-white" style={{ fontFamily: "Sora, sans-serif" }}>
-            Nagar<span className="text-blue-300">Seva</span>
+            Nagrik<span className="text-blue-300">Setu</span>
           </span>
         </Link>
 
@@ -68,7 +68,7 @@ function RegisterPage() {
           </p>
         </div>
 
-        <p className="text-xs text-white/25 relative z-10">© 2024 NagarSeva</p>
+        <p className="text-xs text-white/25 relative z-10">© 2026 NagrikSetu</p>
       </div>
 
       {/* Right panel */}
@@ -83,7 +83,7 @@ function RegisterPage() {
               </svg>
             </div>
             <span className="font-bold text-base text-[#0f1923]" style={{ fontFamily: "Sora, sans-serif" }}>
-              Nagar<span className="text-[#1a56db]">Seva</span>
+              Nagrik<span className="text-[#1a56db]">Setu</span>
             </span>
           </Link>
 

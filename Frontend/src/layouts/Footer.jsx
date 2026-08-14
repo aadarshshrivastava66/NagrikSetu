@@ -15,7 +15,7 @@ const Footer = () => (
               </svg>
             </div>
             <span className="font-bold text-lg text-white" style={{ fontFamily: "Sora, sans-serif" }}>
-              Nagar<span className="text-blue-300">Seva</span>
+              Nagrik<span className="text-blue-300">Setu</span>
             </span>
           </Link>
           <p className="text-sm text-white/40 leading-relaxed mb-5 max-w-[220px]">
@@ -62,7 +62,7 @@ const Footer = () => (
       </div>
 
       <div className="border-t border-white/[0.07] pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <p className="text-xs text-white/25">© {new Date().getFullYear()} NagarSeva. Built By Aadarsh Shrivastava</p>
+        <p className="text-xs text-white/25">© {new Date().getFullYear()} NagrikSetu. Built By Aadarsh Shrivastava</p>
         <p className="text-xs text-white/30 flex items-center gap-1.5">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
           Compliant with Digital India guidelines

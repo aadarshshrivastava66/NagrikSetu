@@ -57,20 +57,20 @@ function EmployeeRegisterPage() {
             </svg>
           </div>
           <span className="font-bold text-lg text-white" style={{ fontFamily: "Sora, sans-serif" }}>
-            Nagar<span className="text-blue-300">Seva</span>
+            Nagrik<span className="text-blue-300">Setu</span>
           </span>
         </Link>
 
         <div className="relative z-10">
           <h2 className="text-3xl font-extrabold text-white leading-snug mb-4" style={{ fontFamily: "Sora, sans-serif" }}>
-            Be the change your city needs.
+             Monitor Public needs.
           </h2>
           <p className="text-white/50 text-sm leading-relaxed max-w-xs">
-            Create your free account and start reporting civic issues in under 60 seconds.
+            Create Specific Department Employee and start monitoring reporting civic issues by public.
           </p>
         </div>
 
-        <p className="text-xs text-white/25 relative z-10">© 2024 NagarSeva</p>
+        <p className="text-xs text-white/25 relative z-10">© 2026 NagrikSetu</p>
       </div>
 
       {/* Right panel */}
@@ -85,19 +85,14 @@ function EmployeeRegisterPage() {
               </svg>
             </div>
             <span className="font-bold text-base text-[#0f1923]" style={{ fontFamily: "Sora, sans-serif" }}>
-              Nagar<span className="text-[#1a56db]">Seva</span>
+              Nagrik<span className="text-[#1a56db]">Setu</span>
             </span>
           </Link>
 
           <h1 className="text-2xl font-extrabold text-[#0f1923] mb-1" style={{ fontFamily: "Sora, sans-serif" }}>
-            Create your account
+            Create Employee account
           </h1>
-          <p className="text-sm text-gray-500 mb-8">
-            Already have an account?{" "}
-            <Link to="/login" className="text-[#1a56db] font-semibold hover:underline">
-              Sign in
-            </Link>
-          </p>
+          <br></br>
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-5">

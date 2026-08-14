@@ -35,10 +35,10 @@ const HOW_IT_WORKS = [
 ];
 
 const STATS = [
-  { value: "15+", label: "Issues Tracked" },
-  { value: "2", label: "Cities Onboard" },
-  { value: "6", label: "Departments" },
-  { value: "24/7", label: "Reporting Access" },
+  { value: "1200+", label: "Issues reported" },
+  { value: "89%", label: "Resolution rate" },
+  { value: "48+", label: "Cities onboard" },
+  { value: "4.2 days", label: "Avg. to resolve" },
 ];
 
 function AboutPage() {
@@ -53,13 +53,13 @@ function AboutPage() {
         <div className="max-w-3xl mx-auto text-center relative">
           <div className="inline-flex items-center gap-2 bg-white/10 text-blue-200 text-xs font-semibold tracking-wider uppercase px-3 py-1.5 rounded-full mb-6">
             <span className="w-1.5 h-1.5 bg-blue-400 rounded-full" />
-            About NagarSeva
+            About NagrikSetu
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-5" style={{ fontFamily: "Sora, sans-serif" }}>
             Making civic issues<br />everyone's business
           </h1>
           <p className="text-base text-white/60 leading-relaxed max-w-xl mx-auto">
-            NagarSeva bridges the gap between citizens and municipal authorities —
+            NagrikSetu bridges the gap between citizens and municipal authorities —
             turning silent frustration into tracked, resolved action.
           </p>
         </div>
@@ -88,7 +88,7 @@ function AboutPage() {
           </h2>
           <p className="text-gray-500 leading-relaxed max-w-2xl mx-auto">
             Too often, civic complaints disappear into phone calls no one tracks and emails no one answers.
-            NagarSeva replaces that with a simple, transparent system: report an issue, watch it move through
+            NagrikSetu replaces that with a simple, transparent system: report an issue, watch it move through
             real stages, and see it resolved — all without needing anyone's phone number.
           </p>
         </div>
@@ -113,7 +113,7 @@ function AboutPage() {
           <div className="text-center mb-12">
             <span className="text-xs font-bold tracking-widest uppercase text-[#1a56db]">The Process</span>
             <h2 className="text-3xl font-extrabold text-[#0f1923] mt-3" style={{ fontFamily: "Sora, sans-serif" }}>
-              How NagarSeva works
+              How NagrikSetu works
             </h2>
           </div>
 
@@ -147,7 +147,7 @@ function AboutPage() {
             <ul className="space-y-2.5">
               {[
                 "Report issues with photo & GPS in under a minute",
-                "No login required to browse or upvote issues",
+                "No login required to browse issues",
                 "Track every stage until resolution",
                 "Rate the outcome once resolved",
               ].map((item) => (

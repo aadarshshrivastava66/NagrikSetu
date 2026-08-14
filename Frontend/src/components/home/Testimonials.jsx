@@ -1,7 +1,7 @@
 const testimonials = [
   { quote: "I reported a pothole that had been there for two years. Three days after submitting on NagarSeva with 60+ upvotes, the road crew showed up and filled it.", name: "Rahul Verma", ward: "Ward 12, Indore", initials: "RV", color: "#4f46e5" },
   { quote: "The drainage outside my building was overflowing every monsoon for four seasons. It got acknowledged in 6 hours and cleared in 2 days. Finally.", name: "Priya Sharma", ward: "Ward 7, Bhopal", initials: "PS", color: "#0f766e" },
-  { quote: "As a ward councillor, NagarSeva transformed how my team works. The dashboard shows exactly what's pending, who's responsible, and our SLA status.", name: "Amit Kumar", ward: "Ward Councillor, Pune", initials: "AK", color: "#b45309" },
+  { quote: "As a ward councillor, NagrikSetu transformed how my team works. The dashboard shows exactly what's pending, who's responsible, and our SLA status.", name: "Amit Kumar", ward: "Ward Councillor, Pune", initials: "AK", color: "#b45309" },
 ];
 
 const Stars = () => (
@@ -22,7 +22,7 @@ const Testimonials = () => (
         Real people, real fixes
       </h2>
       <p className="text-base text-gray-500 max-w-lg leading-relaxed mb-12">
-        Thousands of citizens have already used NagarSeva to get their neighbourhood issues resolved.
+        Thousands of citizens have already used NagrikSetu to get their neighbourhood issues resolved.
       </p>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {testimonials.map((t) => (
