@@ -1,5 +1,7 @@
 const Issue = require("../models/Issue");
 const User = require("../models/User");
+
+const getUserId = (req) => req.user.userId || req.user.id || req.user._id;
 // POST /api/issues — Create new issue
 module.exports.createIssue = async (req, res) => {
   const { title, description, category, photoFileId, photoFilename, latitude, longitude, address, city, ward } = req.body;
@@ -67,7 +69,8 @@ module.exports.getIssueById = async (req, res) => {
   try {
     const issue = await Issue.findById(req.params.id)
       .populate("reportedBy", "name email city ward")
-      .populate("upvotedBy", "name");
+      .populate("upvotedBy", "name")
+      .populate("assignedTo", "name email"); ;
 
     if (!issue) {
       return res.status(404).json({ message: "Issue not found" });
@@ -266,6 +269,145 @@ module.exports.getGovStats = async (req, res) => {
     });
   } catch (err) {
     console.log("Get stats error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
+
+//new
+module.exports.getFieldWorkers = async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    const currentUser = await User.findById(userId);
+
+    if (!currentUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    let filter = { role: "fieldworker", isActive: true };
+
+    // Gov only sees field workers in their own department + city
+    if (currentUser.role === "gov") {
+      filter.department = currentUser.department;
+      filter.city = currentUser.city;
+    }
+    // Admin sees all field workers (optionally filter by query)
+    if (currentUser.role === "admin") {
+      const { department, city } = req.query;
+      if (department) filter.department = department;
+      if (city) filter.city = city;
+    }
+
+    const fieldWorkers = await User.find(filter).select("name email department city");
+
+    res.status(200).json({ fieldWorkers });
+  } catch (err) {
+    console.log("Get field workers error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// PATCH /api/issues/:id/assign — Gov/Admin assigns issue to a field worker
+module.exports.assignIssue = async (req, res) => {
+  try {
+    const { fieldWorkerId } = req.body;
+
+    if (!fieldWorkerId) {
+      return res.status(400).json({ message: "Field worker is required" });
+    }
+
+    const issue = await Issue.findById(req.params.id);
+    if (!issue) {
+      return res.status(404).json({ message: "Issue not found" });
+    }
+
+    const fieldWorker = await User.findById(fieldWorkerId);
+    if (!fieldWorker || fieldWorker.role !== "fieldworker") {
+      return res.status(400).json({ message: "Invalid field worker" });
+    }
+
+    const userId = getUserId(req);
+    const currentUser = await User.findById(userId);
+
+    // Gov can only assign issues in their own scope
+    if (currentUser.role === "gov") {
+      const deptMatch = issue.category.toLowerCase() === (currentUser.department || "").toLowerCase();
+      const cityMatch = issue.city.toLowerCase() === (currentUser.city || "").toLowerCase();
+      if (!deptMatch || !cityMatch) {
+        return res.status(403).json({ message: "You can only assign issues in your department and city" });
+      }
+    }
+
+    issue.assignedTo = fieldWorker._id;
+    issue.assignedBy = currentUser._id;
+    issue.status = "Assigned";
+    await issue.save();
+
+    const populatedIssue = await Issue.findById(issue._id)
+      .populate("assignedTo", "name email")
+      .populate("reportedBy", "name email");
+
+    res.status(200).json({ message: "Issue assigned successfully", issue: populatedIssue });
+  } catch (err) {
+    console.log("Assign issue error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// GET /api/issues/fieldworker/my-tasks — Field worker sees their assigned issues
+module.exports.getMyTasks = async (req, res) => {
+  try {
+    const userId = getUserId(req);
+
+    const issues = await Issue.find({ assignedTo: userId })
+      .populate("reportedBy", "name")
+      .populate("assignedBy", "name")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ issues });
+  } catch (err) {
+    console.log("Get my tasks error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// PATCH /api/issues/:id/resolve — Field worker uploads resolution photo and marks resolved
+module.exports.resolveIssue = async (req, res) => {
+  try {
+    const { resolutionFileId, resolutionFilename } = req.body;
+
+    if (!resolutionFileId) {
+      return res.status(400).json({ message: "Resolution photo is required" });
+    }
+
+    const issue = await Issue.findById(req.params.id);
+    if (!issue) {
+      return res.status(404).json({ message: "Issue not found" });
+    }
+
+    const userId = getUserId(req);
+
+    // Only the assigned field worker can resolve it
+    if (!issue.assignedTo || issue.assignedTo.toString() !== userId.toString()) {
+      return res.status(403).json({ message: "This issue is not assigned to you" });
+    }
+
+    issue.resolutionPhoto = {
+      fileId: resolutionFileId,
+      filename: resolutionFilename,
+      uploadedAt: new Date(),
+    };
+    issue.status = "Resolved";
+    await issue.save();
+
+    res.status(200).json({ message: "Issue marked as resolved", issue });
+  } catch (err) {
+    console.log("Resolve issue error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

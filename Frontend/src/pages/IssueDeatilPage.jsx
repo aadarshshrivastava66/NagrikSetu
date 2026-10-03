@@ -3,7 +3,6 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import backendApi from "../api/backendApi";
 import { useAuth } from "../context/AuthContext";
 
-
 const STATUS_STEPS = [
   "Submitted",
   "Acknowledged",
@@ -49,9 +48,33 @@ function IssueDetailPage() {
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentError, setCommentError] = useState("");
 
+  // Assignment states
+  const [fieldWorkers, setFieldWorkers] = useState([]);
+  const [selectedWorker, setSelectedWorker] = useState("");
+  const [assigning, setAssigning] = useState(false);
+  const [assignError, setAssignError] = useState("");
+  const [loadingWorkers, setLoadingWorkers] = useState(false);
+
+  const isGov = user?.role === "gov";
+  const isAdmin = user?.role === "admin";
+
+  // Can this gov/admin user manage this specific issue's assignment?
+  const canManageAssignment =
+    isAdmin ||
+    (isGov &&
+      issue &&
+      issue.category === user.department &&
+      issue.city === user.city);
+
   useEffect(() => {
     fetchIssue();
   }, [id]);
+
+  useEffect(() => {
+    if (issue && canManageAssignment && !issue.assignedTo) {
+      fetchFieldWorkers();
+    }
+  }, [issue, user]);
 
   const fetchIssue = async () => {
     setLoading(true);
@@ -60,7 +83,6 @@ function IssueDetailPage() {
       const { data } = await backendApi.get(`/issues/${id}`);
       setIssue(data.issue);
 
-      // Check if current logged-in user already voted
       const alreadyVoted =
         user &&
         data.issue.upvotedBy?.some((u) => u._id === user._id || u === user._id);
@@ -71,6 +93,42 @@ function IssueDetailPage() {
       setLoading(false);
     }
   };
+
+  const fetchFieldWorkers = async () => {
+    setLoadingWorkers(true);
+    try {
+      const { data } = await backendApi.get("/issues/gov/fieldworkers");
+      console.log(data.fieldWorkers)
+      setFieldWorkers(data.fieldWorkers);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingWorkers(false);
+    }
+  };
+
+  const handleAssign = async () => {
+    if (!selectedWorker) {
+      setAssignError("Please select a field worker");
+      return;
+    }
+
+    setAssigning(true);
+    setAssignError("");
+
+    try {
+      const { data } = await backendApi.patch(`/issues/${id}/assign`, {
+        fieldWorkerId: selectedWorker,
+      });
+      setIssue(data.issue);
+      setSelectedWorker("");
+    } catch (err) {
+      setAssignError(err.response?.data?.message || "Failed to assign issue");
+    } finally {
+      setAssigning(false);
+    }
+  };
+
   // Handle upvote
   const handleUpvote = async () => {
     if (!user) {
@@ -82,7 +140,7 @@ function IssueDetailPage() {
     try {
       const { data } = await backendApi.post(`/issues/${id}/upvote`);
       setIssue((prev) => ({ ...prev, votes: data.votes }));
-      setHasVoted((prev) => !prev); // toggle voted state
+      setHasVoted((prev) => !prev);
     } catch (err) {
       console.error(err);
     } finally {
@@ -112,7 +170,6 @@ function IssueDetailPage() {
         text: commentText.trim(),
       });
 
-      // Add new comment to issue locally
       setIssue((prev) => ({
         ...prev,
         comments: [...prev.comments, data.comment],
@@ -243,6 +300,28 @@ function IssueDetailPage() {
                 </span>
               </div>
             </div>
+
+            {/* ✅ Resolution Photo (if resolved) */}
+            {issue.resolutionPhoto?.fileId && (
+              <div className="bg-white rounded-2xl border border-green-200 p-6">
+                <h2 className="text-base font-bold text-[#0f1923] mb-1 flex items-center gap-2">
+                  ✅ Resolution Proof
+                </h2>
+                <p className="text-xs text-gray-500 mb-4">
+                  Uploaded by field worker on{" "}
+                  {new Date(issue.resolutionPhoto.uploadedAt).toLocaleDateString("en-IN", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+                <img
+                  src={`http://localhost:5000/api/files/${issue.resolutionPhoto.fileId}`}
+                  alt="Resolution proof"
+                  className="w-full max-h-80 object-cover rounded-xl"
+                />
+              </div>
+            )}
 
             {/* Comments Section */}
             <div className="bg-white rounded-2xl border border-gray-200 p-6">
@@ -399,6 +478,90 @@ function IssueDetailPage() {
                 Login required to vote
               </p>
             )}
+
+            {/* ✅ Assignment Card — only visible to gov/admin who manage this issue */}
+            {canManageAssignment && (
+              <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                <h3 className="text-sm font-bold text-[#0f1923] mb-4 flex items-center gap-2">
+                  🧰 Field Worker Assignment
+                </h3>
+
+                {issue.assignedTo ? (
+                  // ✅ Already assigned — show name, no reassign option
+                  <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                        {issue.assignedTo.name?.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs text-purple-600 font-semibold uppercase tracking-wide mb-0.5">
+                          Assigned to
+                        </p>
+                        <p className="text-sm font-bold text-[#0f1923] truncate">
+                          {issue.assignedTo.name}
+                        </p>
+                        {issue.assignedTo.email && (
+                          <p className="text-xs text-gray-500 truncate">
+                            {issue.assignedTo.email}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  // Not assigned yet — show assignment form
+                  <>
+                    {loadingWorkers ? (
+                      <div className="flex items-center justify-center py-4">
+                        <div className="w-5 h-5 border-2 border-[#1a56db] border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    ) : fieldWorkers.length === 0 ? (
+                      <div className="bg-amber-50 border border-amber-200 text-amber-700 text-xs px-3 py-2.5 rounded-xl">
+                        No field workers found for {user.department || "this department"} in {user.city || "this city"}.
+                      </div>
+                    ) : (
+                      <>
+                        <select
+                          value={selectedWorker}
+                          onChange={(e) => {
+                            setSelectedWorker(e.target.value);
+                            setAssignError("");
+                          }}
+                          className="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db] mb-3"
+                        >
+                          <option value="">Select a field worker</option>
+                          {fieldWorkers.map((fw) => (
+                            <option key={fw._id} value={fw._id}>
+                              {fw.name} — {fw.email}
+                            </option>
+                          ))}
+                        </select>
+
+                        {assignError && (
+                          <p className="text-xs text-red-500 mb-3">{assignError}</p>
+                        )}
+
+                        <button
+                          onClick={handleAssign}
+                          disabled={!selectedWorker || assigning}
+                          className="w-full py-2.5 rounded-xl bg-[#1a56db] hover:bg-[#1140a8] text-white text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {assigning ? (
+                            <>
+                              <svg className="animate-spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                              </svg>
+                              Assigning...
+                            </>
+                          ) : "Assign Issue"}
+                        </button>
+                      </>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
             {/* Status Timeline */}
             <div className="bg-white rounded-2xl border border-gray-200 p-6">
               <h3 className="text-sm font-bold text-[#0f1923] mb-4">

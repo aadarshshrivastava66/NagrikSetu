@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import backendApi from "../api/backendApi";
 import { useAuth } from "../context/AuthContext";
 
-const STATUSES = ["Submitted", "Acknowledged", "Assigned", "In Progress", "Resolved", "Closed"];
+const STATUSES = ["Submitted", "Assigned", "Resolved", "Closed"];
 const CATEGORIES = ["All", "Roads", "Water", "Electricity", "Sanitation", "Parks", "Safety", "Infrastructure", "Other"];
 
 const STATUS_COLORS = {

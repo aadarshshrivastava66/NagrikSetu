@@ -7,7 +7,6 @@ const { initGridFS } = require("./config/gridfs");
 
 dotenv.config();
 const app=express();
-
 mongoose.connect(process.env.MONGO_URL)
 .then(()=>{
     console.log("Connect to Database");
@@ -16,7 +15,7 @@ mongoose.connect(process.env.MONGO_URL)
 .catch((err)=>{
     console.log(err);
 })
-console.log(process.env.CLIENT_URL)
+
 app.use(cors({
     
     origin:process.env.CLIENT_URL,

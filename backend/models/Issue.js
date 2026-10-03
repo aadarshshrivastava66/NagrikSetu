@@ -22,6 +22,11 @@ const issueSchema = new mongoose.Schema({
     },
     filename: String,
   },
+    resolutionPhoto: {
+    fileId: mongoose.Schema.Types.ObjectId,
+    filename: String,
+    uploadedAt: Date,
+  },
   location: {
     latitude: {
       type: Number,
@@ -62,6 +67,16 @@ const issueSchema = new mongoose.Schema({
     type: [mongoose.Schema.Types.ObjectId],
     ref: "User",
     default: [],
+  },
+    assignedTo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null,
+  },
+  assignedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null,
   },
   comments: [
     {

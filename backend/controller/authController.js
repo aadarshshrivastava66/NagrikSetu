@@ -28,7 +28,7 @@ module.exports.register = async (req, res) => {
       city,
       ward,
       role,
-      department: role === "gov" ? department : undefined,
+      department: role === "gov" || role === "fieldworker" ? department : undefined,
     });
 
     await newUser.save();
@@ -77,7 +77,15 @@ module.exports.login = async (req, res) => {
 
     res.status(200).json({
       message: "Logged in successfully",
-      user
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        city: user.city,
+        ward: user.ward,
+        department: user.department, 
+      },
     });
   } catch (err) {
     console.log("Login error:", err);
@@ -98,7 +106,7 @@ module.exports.logout = (req, res) => {
 module.exports.getMe = async (req, res) => {
   
   try {
-    const user = await User.findById(req.user.userId).select("name email role city ward");
+    const user = await User.findById(req.user.userId).select("name email role city ward department");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

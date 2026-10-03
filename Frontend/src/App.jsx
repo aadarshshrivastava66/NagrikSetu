@@ -20,7 +20,7 @@ import NotFound from "./pages/NotFoundPage";
 import EmployeeRegisterPage from "./pages/EmployeeRegisterPage";
 import AdminRoute from "./components/AdminRoute";
 import AdminIssuePage from "./pages/AdminIssuePage";
-
+import FieldWorkerDashboardPage from "./pages/FieldWorkerDashboardPage";
 
 
 const PlaceholderPage = ({ title }) => (
@@ -64,7 +64,10 @@ function App() {
             <AdminRoute>
             <EmployeeRegisterPage/>
             </AdminRoute>}/>
-          <Route path="*" element={<NotFound/>}/>
+          
+
+          <Route path="/fieldworker/dashboard" element={<ProtectedRoute><FieldWorkerDashboardPage /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound/>}/>
           {/* <Route path="/register" element={<RegisterPage/>}/> */}
           {/* <Route path="/report" element={<PlaceholderPage title="Report an Issue" />} />
           <Route path="/issues" element={<PlaceholderPage title="Browse Issues" />} />

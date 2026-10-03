@@ -1,12 +1,15 @@
 import { useState } from "react";
-import backendApi from "../api/backendApi"
 import { Link, useNavigate } from "react-router-dom";
+import backendApi from "../api/backendApi";
+import { useAuth } from "../context/AuthContext";
 
-
-const CITIES = ["Bhopal", "Indore", "Pune", "Mumbai", "Bangalore", "Hyderabad", "Surat", "Chandigarh"];
-const Departments=["Roads", "Water", "Electricity", "Sanitation", "Parks", "Safety", "Infrastructure"];
+const DEPARTMENTS = ["Roads", "Water", "Electricity", "Sanitation", "Parks", "Safety", "Infrastructure"];
+const CITIES = ["Indore", "Bhopal", "Pune", "Mumbai", "Bangalore"];
 
 function EmployeeRegisterPage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -14,13 +17,12 @@ function EmployeeRegisterPage() {
     phone: "",
     city: "",
     ward: "",
-    role: "gov",
-    department:""
+    role: "gov", // gov | fieldworker
+    department: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showPass, setShowPass] = useState(false);
-  const navigate = useNavigate();
+  const [success, setSuccess] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -30,10 +32,15 @@ function EmployeeRegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     try {
       await backendApi.post("/auth/register", formData);
-      navigate("/login");
+      setSuccess(true);
+      setFormData({
+        name: "", email: "", password: "", phone: "",
+        city: "", ward: "", role: "gov", department: "",
+      });
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");
     } finally {
@@ -41,58 +48,37 @@ function EmployeeRegisterPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex">
-      
-      {/* Left panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#0f1923] relative flex-col justify-between p-12 overflow-hidden">
-        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-blue-600/20 pointer-events-none" />
-        <div className="absolute -bottom-24 -right-12 w-72 h-72 rounded-full bg-blue-800/20 pointer-events-none" />
+  // Only admin can access this page
+  if (user && user.role !== "admin") {
+    navigate("/");
+    return null;
+  }
 
-        <Link to="/" className="flex items-center gap-2.5 relative z-10">
-          <div className="w-9 h-9 rounded-xl bg-[#1a56db] flex items-center justify-center">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-              <circle cx="12" cy="9" r="2.5"/>
-            </svg>
-          </div>
-          <span className="font-bold text-lg text-white" style={{ fontFamily: "Sora, sans-serif" }}>
-            Nagrik<span className="text-blue-300">Setu</span>
-          </span>
+  return (
+    <div className="min-h-screen bg-gray-50 py-12 px-6">
+      <div className="max-w-xl mx-auto">
+
+        <Link to="/gov/dashboard" className="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-[#0f1923] mb-6">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+          </svg>
+          Back to Dashboard
         </Link>
 
-        <div className="relative z-10">
-          <h2 className="text-3xl font-extrabold text-white leading-snug mb-4" style={{ fontFamily: "Sora, sans-serif" }}>
-             Monitor Public needs.
-          </h2>
-          <p className="text-white/50 text-sm leading-relaxed max-w-xs">
-            Create Specific Department Employee and start monitoring reporting civic issues by public.
-          </p>
-        </div>
-
-        <p className="text-xs text-white/25 relative z-10">© 2026 NagrikSetu</p>
-      </div>
-
-      {/* Right panel */}
-      <div className="flex-1 flex flex-col justify-center items-center px-6 py-12">
-        <div className="w-full max-w-md">
-
-          <Link to="/" className="flex lg:hidden items-center gap-2 mb-10">
-            <div className="w-8 h-8 rounded-lg bg-[#1a56db] flex items-center justify-center">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-                <circle cx="12" cy="9" r="2.5"/>
-              </svg>
-            </div>
-            <span className="font-bold text-base text-[#0f1923]" style={{ fontFamily: "Sora, sans-serif" }}>
-              Nagrik<span className="text-[#1a56db]">Setu</span>
-            </span>
-          </Link>
-
+        <div className="bg-white rounded-2xl border border-gray-200 p-8">
           <h1 className="text-2xl font-extrabold text-[#0f1923] mb-1" style={{ fontFamily: "Sora, sans-serif" }}>
-            Create Employee account
+            Register New Employee
           </h1>
-          <br></br>
+          <p className="text-sm text-gray-500 mb-6">
+            Create an account for a government officer or field worker
+          </p>
+
+          {success && (
+            <div className="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-xl mb-5">
+              ✓ Employee registered successfully!
+            </div>
+          )}
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-5">
@@ -101,122 +87,133 @@ function EmployeeRegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-[#0f1923] mb-1.5">Full Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Rahul Verma"
-                required
-                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-white outline-none transition-all focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
-              />
-            </div>
 
+            {/* Role selector */}
             <div>
-              <label className="block text-sm font-semibold text-[#0f1923] mb-1.5">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="you@example.com"
-                required
-                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-white outline-none transition-all focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-[#0f1923] mb-1.5">Password</label>
-              <div className="relative">
-                <input
-                  type={showPass ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Min. 6 characters"
-                  required
-                  className="w-full px-4 py-3 pr-11 text-sm rounded-xl border border-gray-200 bg-white outline-none transition-all focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
-                />
+              <label className="block text-sm font-semibold text-[#0f1923] mb-2">Employee Type *</label>
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  onClick={() => setFormData((p) => ({ ...p, role: "gov" }))}
+                  className={`py-3 rounded-xl border text-sm font-semibold transition-all
+                    ${formData.role === "gov"
+                      ? "border-[#1a56db] bg-blue-50 text-[#1a56db]"
+                      : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}
                 >
-                  {showPass ? "🙈" : "👁️"}
+                  🏛️ Department Officer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData((p) => ({ ...p, role: "fieldworker" }))}
+                  className={`py-3 rounded-xl border text-sm font-semibold transition-all
+                    ${formData.role === "fieldworker"
+                      ? "border-[#1a56db] bg-blue-50 text-[#1a56db]"
+                      : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}
+                >
+                  🧰 Field Worker
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-[#0f1923] mb-1.5">Phone (optional)</label>
+              <label className="block text-sm font-semibold text-[#0f1923] mb-2">Full Name *</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Employee's full name"
+                required
+                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[#0f1923] mb-2">Email *</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="employee@gov.in"
+                required
+                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[#0f1923] mb-2">Temporary Password *</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Min. 6 characters"
+                required
+                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[#0f1923] mb-2">Phone</label>
               <input
                 type="tel"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="+91 98765 43210"
-                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-white outline-none transition-all focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
+                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-[#0f1923] mb-1.5">City</label>
-              <select
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-white outline-none transition-all focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
-              >
-                <option value="">Select city</option>
-                {CITIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-[#0f1923] mb-2">City *</label>
+                <select
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
+                >
+                  <option value="">Select city</option>
+                  {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-[#0f1923] mb-2">Department *</label>
+                <select
+                  name="department"
+                  value={formData.department}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
+                >
+                  <option value="">Select department</option>
+                  {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-[#0f1923] mb-1.5">Department</label>
-              <select
-                name="department"
-                value={formData.department}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-white outline-none transition-all focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
-              >
-                <option value=""> Select Department</option>
-                {Departments.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-[#0f1923] mb-1.5">Ward / Area</label>
+              <label className="block text-sm font-semibold text-[#0f1923] mb-2">Ward (optional)</label>
               <input
                 type="text"
                 name="ward"
                 value={formData.ward}
                 onChange={handleChange}
-                placeholder="e.g. Ward 12 or Vijay Nagar"
-                required
-                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-white outline-none transition-all focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
+                placeholder="e.g. Ward 12"
+                className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-[#1a56db]/20 focus:border-[#1a56db]"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-xl bg-[#1a56db] hover:bg-[#1140a8] text-white text-sm font-bold transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+              className="w-full py-3.5 rounded-xl bg-[#1a56db] hover:bg-[#1140a8] text-white text-sm font-bold transition-all disabled:opacity-60"
             >
-              {loading ? "Creating account..." : "Create account"}
+              {loading ? "Registering..." : "Register Employee"}
             </button>
-
-            <p className="text-xs text-gray-400 text-center">
-              By creating an account you agree to our Terms and Privacy Policy.
-            </p>
           </form>
         </div>
       </div>

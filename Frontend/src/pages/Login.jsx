@@ -24,11 +24,14 @@ function LoginPage() {
     try {
       const { data } = await backendApi.post("/auth/login", formData);
       setUser(data.user);
-      if(data.user.role==='citizen'){
-        navigate("/dashboard");
-      }else{
-        navigate("/gov/dashboard")
-      }
+
+if (data.user.role === "gov" || data.user.role === "admin") {
+  navigate("/gov/dashboard");
+} else if (data.user.role === "fieldworker") {
+  navigate("/fieldworker/dashboard");
+} else {
+  navigate("/dashboard");
+}
       
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
